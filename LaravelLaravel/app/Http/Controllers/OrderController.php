@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Order_Detail;
 use App\Models\Product;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -38,7 +41,59 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        //return $request->all();
+        DB::transaction(function() use ($request) {
+
+        //Order Modal
+        $orders = new Order;
+        $orders->name= $request->customer_name;
+        $orders->phone= $request->customer_phone;
+        $orders->save();
+        $order_id = $orders->id;
+
+        //Order Details Modal
+
+        for ($product_id=0; $product_id <count($request->product_id); $product_id++) {
+          
+        $order_details = new Order_detail;
+        $order_details->order_id = $order_id;
+        $order_details->product_id = $request->product_id[$product_id];
+        $order_details->unitprice = $request->price[$product_id];
+        $order_details->quantity = $request->quantity[$product_id];
+        $order_details->discount = $request->discount[$product_id];
+        $order_details->amount = $request->total_amount[$product_id];
+        $order_details->save();
+        }
+        
+
+        //Transaction Modal
+        $transaction = new Transaction();
+        $transaction->order_id = $order_id;
+        $transaction->user_id = auth()->user()->id;
+        $transaction->balance = $request->balance;
+        $transaction->paid_amount = $request->paid_amount;
+        $transaction->payment_method = $request->payment_method;
+        $transaction->transac_amount = $request->amount;
+        $transaction->transac_date = date('Y-m-d ');
+        $transaction->save();
+
+        // last order history
+        $products=Product::all();
+        $order_details=Order_detail::where('order_id', $order_id)->get();
+        $orderedBy=Order::where('id', $order_id)->get();
+        
+
+        return view('orders.index', [
+            'products' => $products,
+            'order_details' => $order_details,
+            'customer_orders' => $orderedBy,
+        ]);
+
+    });
+
+        return back()->with("Product orders failed to insert, please try again later.");
+
     }
 
     /**
