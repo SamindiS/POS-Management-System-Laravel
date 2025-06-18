@@ -20,7 +20,16 @@ class OrderController extends Controller
     {
         $products=Product::all();
         $orders=Order::all();
-        return view('orders.index',['products'=>$products,'orders'=>$orders]);
+
+         //last order history
+         $lastID= Order_Detail::max('order_id');
+        $order_receipt=Order_Detail::where('order_id', $lastID)->get();
+
+        return view('orders.index',
+        ['products'=>$products,
+        'orders'=>$orders,
+        'order_receipt'=>$order_receipt
+        ]);
     }
 
     /**
@@ -80,7 +89,9 @@ class OrderController extends Controller
 
         // last order history
         $products=Product::all();
-        $order_details=Order_detail::where('order_id', $order_id)->get();
+        $order_details=Order_Detail::where('order_id', $order_id)->get();
+
+       
         $orderedBy=Order::where('id', $order_id)->get();
         
 

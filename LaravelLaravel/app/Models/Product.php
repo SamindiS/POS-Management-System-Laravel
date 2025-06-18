@@ -17,5 +17,11 @@ class Product extends Model
         'brand',	
         'description',
     ];
+
+
+    public function orderdetail()
+    {
+        return $this->hasMany('APP\Models\Order_Detail');
+    }
 }
 
