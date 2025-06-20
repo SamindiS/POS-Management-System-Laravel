@@ -14,9 +14,16 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::paginate(5);
-        return view('products.index', ['products' => $products]);
-    }
+    $products = Product::paginate(15); // Show 15 items per page
+    $lowStockCount = Product::whereColumn('alert_stock', '>=', 'quantity')->count();
+    $outOfStockCount = Product::where('quantity', '<=', 0)->count();
+    
+    return view('products.index', [
+        'products' => $products,
+        'lowStockCount' => $lowStockCount,
+        'outOfStockCount' => $outOfStockCount
+    ]);
+}
 
 
     /**

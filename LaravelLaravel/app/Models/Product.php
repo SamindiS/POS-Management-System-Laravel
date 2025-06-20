@@ -24,4 +24,3 @@ class Product extends Model
         return $this->hasMany('APP\Models\Order_Detail');
     }
 }
-
